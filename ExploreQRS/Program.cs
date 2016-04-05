@@ -1,17 +1,7 @@
 ﻿using NDesk.Options;
 using System;
-//using System.Collections.Generic;
 using System.IO;
-//using System.Linq;
 using System.Net;
-//using System.Text;
-//using System.Threading.Tasks;
-//using System.Web;
-//using System.Web.Script.Serialization;
-//using System.Runtime.Serialization;
-//using System.Data;
-using System.Data;
-using System.Xml;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -37,7 +27,7 @@ namespace ExploreQRS
                                 {"u|username=", "{Username} of user to connect as, ex: UserDirectory:Internal;UserId:sa_repository", v => username = v },
                                 {"c|cert=", "{Certificate} FriendlyName as per MMC configuration", v => cert = v },
                                 {"p|path=", "{Path} of the endpoint to get, ex. /qrs/[type]/d47b454b-b2f3-4a23-b6f9-fa74926e0234", v => path =v },
-                                {"f|filename=", "{Filename} of the output QRS API response", v => filename =v },
+                                {"f|filename=", "{Filename} of the output QRS API response, ex. C:\\Folder\\Filename", v => filename =v },
                                 {"V|version", "Show version information", v => version = v != null},
                                 {"?|help", "Show usage information", v => help = v != null}
                                 
@@ -79,8 +69,8 @@ namespace ExploreQRS
 
         static void ShowHelp(OptionSet p)
         {
-            Console.WriteLine("Usage: QlikAppTransfer [options]");
-            Console.WriteLine("Export and import apps in Qlik Sense QMC via command line.");
+            Console.WriteLine("Usage: QRSExplorer [options]");
+            Console.WriteLine("Explore the QRS repository in Qlik Sense via command line and export to XML.");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
@@ -99,7 +89,6 @@ namespace ExploreQRS
             X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             // try
             X509Certificate myCert = null;
-            Console.WriteLine("This far OK");
             //{
             var thumbprint = cert.Replace("\u200e", string.Empty).Replace("\u200f", string.Empty).Replace(" ", string.Empty);
             store.Open(OpenFlags.ReadOnly);
@@ -119,6 +108,8 @@ namespace ExploreQRS
                 //Console.WriteLine("Error: No certificate found containing that Friendly Name ");
             }
 
+            Console.WriteLine(myCert);
+
             // locate the client certificate and accept it as trusted
             //X509Certificate2 myCert = new X509Certificate2("client.pfx");
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
@@ -128,7 +119,7 @@ namespace ExploreQRS
             request.Method = "GET";
             request.Accept = "application/json";
             request.Headers.Add("X-Qlik-Xrfkey", xrfkey);
-            request.Headers.Add("X-Qlik-User", @"UserDirectory=internal;UserId=sa_repository");
+            request.Headers.Add("X-Qlik-User", @""+username);
             if (myCert != null) { request.ClientCertificates.Add(myCert); }
             //request.UserAgent = "Client Cert Sample";
 
